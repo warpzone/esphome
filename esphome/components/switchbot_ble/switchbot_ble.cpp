@@ -26,28 +26,28 @@ optional<SwitchBotParseResult> parse_switchbot(const esp32_ble_tracker::ESPBTDev
     return {};
   }
 
-  bool is_hand  = (raw[0] & 0x7f) == 0x48;
-  bool is_meter = (raw[0] & 0x7f) == 0x54;
+  bool is_wohand     = (raw[0] & 0x7f) == 0x48;
+  bool is_wosensorth = (raw[0] & 0x7f) == 0x54;
 
-  if (!is_hand && !is_meter) {
+  if (!is_wohand && !is_wosensorth) {
     // ESP_LOGVV(TAG, "SwitchBot no magic bytes");
     return {};
   }
 
   SwitchBotParseResult result;
-  result.type = SwitchBotParseResult::TYPE_HAND;
-  if (is_meter) {
-    result.type = SwitchBotParseResult::TYPE_METER;
+  result.type = SwitchBotParseResult::TYPE_WOHAND;
+  if (is_wosensorth) {
+    result.type = SwitchBotParseResult::TYPE_WOSENSORTH;
   }
 
   result.battery_level = raw[2] & 0x7f;
 
-  if (is_meter) {
+  if (is_wosensorth) {
     result.humidity = raw[5] & 0x7f;
-    if ( (raw[5] & 0x80) >> 7 ) {
-      result.temperature = (raw[4] & 0x7f) + (raw[3] & 0xf0) / 10.0f;
+    if ( (raw[4] & 0x80) >> 7 ) {
+      result.temperature = (raw[4] & 0x7f) + (raw[3] & 0x0f) / 10.0f;
     } else {
-      result.temperature = (raw[4] & 0x7f) + (raw[3] & 0xf0) / 10.0f * (-1);
+      result.temperature = ((raw[4] & 0x7f) + (raw[3] & 0x0f) / 10.0f) * (-1);
     }
   }
 
@@ -59,9 +59,9 @@ bool SwitchBotListener::parse_device(const esp32_ble_tracker::ESPBTDevice &devic
   if (!res.has_value())
     return false;
 
-  const char *name = "Hand";
-  if (res->type == SwitchBotParseResult::TYPE_METER) {
-    name = "Meter";
+  const char *name = "WoHand";
+  if (res->type == SwitchBotParseResult::TYPE_WOSENSORTH) {
+    name = "WoSensorTH";
   }
 
   ESP_LOGD(TAG, "Got SwitchBot %s (%s):", name, device.address_str().c_str());

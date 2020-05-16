@@ -9,7 +9,7 @@ namespace esphome {
 namespace switchbot_ble {
 
 struct SwitchBotParseResult {
-  enum { TYPE_HAND, TYPE_METER } type;
+  enum { TYPE_WOHAND, TYPE_WOSENSORTH } type;
   optional<float> temperature;
   optional<uint8_t> humidity;
   optional<uint8_t> battery_level;
